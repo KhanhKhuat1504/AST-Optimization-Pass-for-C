@@ -1,0 +1,70 @@
+# Ignore compiled code
+*.class
+*.jar
+*.war
+*.ear
+
+# Ignore temporary files
+*.tmp
+*.temp
+
+# Ignore build artifacts
+target/
+dist/
+out/
+bin/
+build/
+
+# Ignore IDE-specific files
+*.iml
+*.ipr
+*.iws
+
+# Ignore code coverage reports
+coverage/
+
+# Ignore generated documentation
+docs/
+
+# Ignore configuration files
+*.config
+*.properties
+*.xml
+
+# Ignore deployment files
+deploy/
+deployed/
+
+# Ignore backup files
+*.bak
+*.backup
+
+# Ignore cache files
+.cache/
+.cached/
+
+# Ignore test results
+test-results/
+
+# Ignore generated files
+generated/
+
+# Ignore logs
+logs/
+
+# Ignore lock files
+*.lock
+
+# Ignore secret files
+*.secret
+
+# Ignore temporary directories
+temp/
+tmp/
+
+# Ignore user-specific files
+.user/
+
+# Ignore test files
+*.log
+*.ll
