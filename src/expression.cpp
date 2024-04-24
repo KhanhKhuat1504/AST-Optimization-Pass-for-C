@@ -4,22 +4,24 @@
 #include "expressions/int2Bool.h"
 #include "expressions/int2Float.h"
 
-llvm::Value* ASTExpression::CompileRValue(llvm::IRBuilder<>& builder, ASTFunction& func)
+llvm::Value *ASTExpression::CompileRValue(llvm::IRBuilder<> &builder, ASTFunction &func)
 {
-    llvm::Value* raw = Compile(builder, func); // First get the naturally compiled value.
-    if (IsLValue(func)) // If the value is an L-Value, we need to load it.
+    llvm::Value *raw = Compile(builder, func); // First get the naturally compiled value.
+    if (IsLValue(func))                        // If the value is an L-Value, we need to load it.
     {
         return builder.CreateLoad(ReturnType(func)->GetLLVMType(builder.getContext()), raw); // Use the return type from this expression to load the needed value.
     }
-    else return raw; // It's already an R-Value.
+    else
+        return raw; // It's already an R-Value.
 }
 
-void ASTExpression::ImplicitCast(ASTFunction& func, std::unique_ptr<ASTExpression>& srcExpression, VarType* destType)
+void ASTExpression::ImplicitCast(ASTFunction &func, std::unique_ptr<ASTExpression> &srcExpression, VarType *destType)
 {
 
     // If the types are equal, nothing needs to be done.
     auto srcType = srcExpression->ReturnType(func);
-    if (srcType->Equals(destType)) return;
+    if (srcType->Equals(destType))
+        return;
 
     // Destination type is a boolean.
     if (destType->Equals(&VarTypeSimple::BoolType))
@@ -74,10 +76,9 @@ void ASTExpression::ImplicitCast(ASTFunction& func, std::unique_ptr<ASTExpressio
 
     // Nothing left to do.
     throw std::runtime_error("ERROR: Source expression can not be implicitly casted to the destination type!");
-
 }
 
-bool ASTExpression::CoerceMathTypes(ASTFunction& func, std::unique_ptr<ASTExpression>& a1, std::unique_ptr<ASTExpression>& a2, VarTypeSimple*& outCoercedType)
+bool ASTExpression::CoerceMathTypes(ASTFunction &func, std::unique_ptr<ASTExpression> &a1, std::unique_ptr<ASTExpression> &a2, VarTypeSimple *&outCoercedType)
 {
 
     // Gather return types.
@@ -86,11 +87,13 @@ bool ASTExpression::CoerceMathTypes(ASTFunction& func, std::unique_ptr<ASTExpres
 
     // Make sure r1 is either a float or int.
     bool r1Float = r1->Equals(&VarTypeSimple::FloatType);
-    if (!r1Float && !r1->Equals(&VarTypeSimple::IntType)) return false;
+    if (!r1Float && !r1->Equals(&VarTypeSimple::IntType))
+        return false;
 
     // Make sure r2 is either a float or int.
     bool r2Float = r2->Equals(&VarTypeSimple::FloatType);
-    if (!r2Float && !r2->Equals(&VarTypeSimple::IntType)) return false;
+    if (!r2Float && !r2->Equals(&VarTypeSimple::IntType))
+        return false;
 
     // Do casting as needed.
     if (r1Float)
@@ -109,7 +112,6 @@ bool ASTExpression::CoerceMathTypes(ASTFunction& func, std::unique_ptr<ASTExpres
             auto tmp = std::move(a2);
             a2 = std::make_unique<ASTExpressionInt2Float>(std::move(tmp));
         }
-
     }
     else
     {
@@ -127,13 +129,11 @@ bool ASTExpression::CoerceMathTypes(ASTFunction& func, std::unique_ptr<ASTExpres
         {
             outCoercedType = &VarTypeSimple::IntType;
         }
-
     }
     return true;
-
 }
 
-bool ASTExpression::CoerceTypes(ASTFunction& func, std::unique_ptr<ASTExpression>& a1, std::unique_ptr<ASTExpression>& a2, VarTypeSimple*& outCoercedType)
+bool ASTExpression::CoerceTypes(ASTFunction &func, std::unique_ptr<ASTExpression> &a1, std::unique_ptr<ASTExpression> &a2, VarTypeSimple *&outCoercedType)
 {
 
     // All we really need to do is convert bool to int first if needed then coerce the math types.
@@ -148,18 +148,16 @@ bool ASTExpression::CoerceTypes(ASTFunction& func, std::unique_ptr<ASTExpression
         a2 = std::make_unique<ASTExpressionBool2Int>(std::move(tmp));
     }
     return CoerceMathTypes(func, a1, a2, outCoercedType);
-
 }
 
-std::unique_ptr<VarType> ASTExpression::StatementReturnType(ASTFunction& func)
+std::unique_ptr<VarType> ASTExpression::StatementReturnType(ASTFunction &func)
 {
     return nullptr; // Expression returns nothing statement wise.
 }
 
-void ASTExpression::Compile(llvm::Module& mod, llvm::IRBuilder<>& builder, ASTFunction& func)
+void ASTExpression::Compile(llvm::Module &mod, llvm::IRBuilder<> &builder, ASTFunction &func)
 {
 
     // We can compile the expression itself, we just don't return anything since this is an expression and not a return statement.
     Compile(builder, func);
-
 }
