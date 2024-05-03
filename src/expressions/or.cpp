@@ -1,6 +1,7 @@
 #include "or.h"
 
 #include "../function.h"
+#include "bool.h"
 
 std::unique_ptr<VarType> ASTExpressionOr::ReturnType(ASTFunction &func)
 {
@@ -14,10 +15,46 @@ bool ASTExpressionOr::IsLValue(ASTFunction &func)
 
 void ASTExpressionOr::MyOptznPass(std::unique_ptr<ASTExpression> &parentPtr, ASTFunction &func)
 {
+    ASTExpressionBool *boolPtr = nullptr;
     if (a1)
-        a1->MyOptznPass(a1, func);
+    {
+        boolPtr = dynamic_cast<ASTExpressionBool *>(a1.get());
+        if (boolPtr)
+        {
+            if (boolPtr->GetVal())
+            {
+                parentPtr.reset(new ASTExpressionBool(true));
+            }
+            else
+            {
+                parentPtr.reset(a2.release());
+            }
+        }
+        else
+        {
+            a1->MyOptznPass(a1, func);
+        }
+    }
+
     if (a2)
-        a2->MyOptznPass(a2, func);
+    {
+        boolPtr = dynamic_cast<ASTExpressionBool *>(a2.get());
+        if (boolPtr)
+        {
+            if (boolPtr->GetVal())
+            {
+                parentPtr.reset(new ASTExpressionBool(true));
+            }
+            else
+            {
+                parentPtr.reset(a1.release());
+            }
+        }
+        else
+        {
+            a2->MyOptznPass(a2, func);
+        }
+    }
 }
 
 llvm::Value *ASTExpressionOr::Compile(llvm::IRBuilder<> &builder, ASTFunction &func) // Hm, this isn't the most efficient approach. I can think of a much easier way...
