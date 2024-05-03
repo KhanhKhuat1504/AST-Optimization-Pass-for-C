@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include "varType.h"
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/Value.h>
@@ -16,6 +17,8 @@ public:
     // Returns: Either a return type if a return statement is definitive, or nullptr if there is none.
     virtual std::unique_ptr<VarType> StatementReturnType(ASTFunction &func) = 0;
 
+    virtual void MyOptznPass(std::unique_ptr<ASTStatement> &parentPtr, ASTFunction &func) = 0;
+
     // Compile the code statement.
     // mod: LLVM module that contains the statement.
     // builder: Instruction builder tied to the current LLVM function.
@@ -30,9 +33,4 @@ public:
 
     // Must make the destructor virtual to make the compiler happy.
     virtual ~ASTStatement() = default;
-
-    // Optimize boolean expressions within the statement.
-    // func: AST function to optimize.
-    // Returns: true if any optimization was performed, false otherwise.
-    virtual bool BooleanPass(ASTFunction &func) = 0;
 };

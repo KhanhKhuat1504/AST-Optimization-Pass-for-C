@@ -10,7 +10,6 @@
 // Abstract Syntax Tree, is the main representation of our program.
 class AST
 {
-
     // Main LLVM context. Note: If we want support for multiple compilation units, this should be moved elsewhere.
     llvm::LLVMContext context;
 
@@ -30,7 +29,6 @@ class AST
     bool compiled = false;
 
 public:
-
     // Function pass manager for function optimizations.
     llvm::legacy::FunctionPassManager fpm;
 
@@ -47,12 +45,15 @@ public:
     // parameters: Collection of variable types and names to pass to the function call.
     // variadic: If the function is a variadic function.
     // Returns: A pointer to the newly added function.
-    ASTFunction* AddFunction(const std::string& name, std::unique_ptr<VarType> returnType, ASTFunctionParameters parameters, bool variadic = false);
+    ASTFunction *AddFunction(const std::string &name, std::unique_ptr<VarType> returnType, ASTFunctionParameters parameters, bool variadic = false);
 
     // Get a function from a name.
     // name: Name of the function to fetch.
     // Returns: A pointer to the function. Throws an exception if it does not exist.
-    ASTFunction* GetFunction(const std::string& name);
+    ASTFunction *GetFunction(const std::string &name);
+
+    // Customized optimization pass
+    void MyOptznPass();
 
     // Compile the AST. This must be done before exporting any object files.
     void Compile();
@@ -62,10 +63,9 @@ public:
 
     // Write LLVM assembly (.ll) to file. Must be done after compilation.
     // outFile: Where to write the .ll file.
-    void WriteLLVMAssemblyToFile(const std::string& outFile);
+    void WriteLLVMAssemblyToFile(const std::string &outFile);
 
     // Write LLVM bitcode (.bc) to file. Must be done after compilation.
     // outFile: Where to write the .bc file.
-    void WriteLLVMBitcodeToFile(const std::string& outFile);
-
+    void WriteLLVMBitcodeToFile(const std::string &outFile);
 };

@@ -2,7 +2,7 @@
 
 #include "../expression.h"
 
-// An expression that multiplies one operand with the other.
+// An expression that adds two operands together.
 class ASTExpressionDivision : public ASTExpression
 {
     // Operands to work with.
@@ -13,18 +13,20 @@ class ASTExpressionDivision : public ASTExpression
     VarTypeSimple *returnType = nullptr;
 
 public:
-    // Create a new division expression.
-    // a1: Left side expression of the division statement.
-    // a2: Right side expression of the division statement.
+    // Create a new addition expression.
+    // a1: Left side expression of the addition statement.
+    // a2: Right side expression of the addition statement.
     ASTExpressionDivision(std::unique_ptr<ASTExpression> a1, std::unique_ptr<ASTExpression> a2) : a1(std::move(a1)), a2(std::move(a2)) {}
 
-    // Create a new division expression.
-    // a1: Left side expression of the division statement.
-    // a2: Right side expression of the division statement.
+    // Create a new addition expression.
+    // a1: Left side expression of the addition statement.
+    // a2: Right side expression of the addition statement.
     static auto Create(std::unique_ptr<ASTExpression> a1, std::unique_ptr<ASTExpression> a2)
     {
         return std::make_unique<ASTExpressionDivision>(std::move(a1), std::move(a2));
     }
+
+    void MyOptznPass(std::unique_ptr<ASTExpression> &parentPtr, ASTFunction &func) override;
 
     // Virtual functions. See base class for details.
     std::unique_ptr<VarType> ReturnType(ASTFunction &func) override;

@@ -12,19 +12,13 @@
 #include "../src/expressions/int.h"
 #include "../src/expressions/float.h"
 #include "../src/expressions/string.h"
+#include "../src/expressions/bool.h"
 #include "../src/expressions/variable.h"
 #include "../src/expressions/addition.h"
 #include "../src/expressions/subtraction.h"
 #include "../src/expressions/multiplication.h"
 #include "../src/expressions/division.h"
 #include "../src/expressions/assignment.h"
-#include "../src/expressions/bool.h"
-#include "../src/expressions/bool2Int.h"
-#include "../src/expressions/float2Int.h"
-#include "../src/expressions/int2Bool.h"
-#include "../src/expressions/int2Float.h"
-#include "../src/expressions/bool.h"
-#include "../src/expressions/negative.h"
 #include "../src/expressions/comparison.h"
 #include "../src/expressions/and.h"
 #include "../src/expressions/or.h"
@@ -33,6 +27,7 @@
 #include "../src/statements/for.h"
 #include "../src/statements/if.h"
 #include "../src/statements/return.h"
+#include "../src/statements/break.h"
 #include "../src/types/simple.h"
 extern FILE *yyin;
  }
@@ -70,7 +65,7 @@ extern FILE *yyin;
   ASTExpressionComparisonType rel;
 }
 
-%token ID BOOL_TYPE INT_TYPE FLOAT_TYPE STRING_TYPE VOID_TYPE SEMICOLON LPAREN RPAREN COMMA LBRACE RBRACE IF ELSE FOR WHILE BREAK RETURN EQUALS_SIGN LOGICAL_OR LOGICAL_AND LOGICAL_NOT RELOP_GT RELOP_LT RELOP_GE RELOP_LE RELOP_EQ RELOP_NE ARITH_PLUS ARITH_MINUS ARITH_MULT ARITH_DIV ARITH_MOD VARIADIC BOOL_LITERAL INT_LITERAL FLOAT_LITERAL STRING_LITERAL EOL
+%token ID BOOL_TYPE INT_TYPE FLOAT_TYPE STRING_TYPE VOID_TYPE SEMICOLON LPAREN RPAREN COMMA LBRACE RBRACE IF ELSE WHILE FOR BREAK RETURN EQUALS_SIGN LOGICAL_OR LOGICAL_AND LOGICAL_NOT RELOP_GT RELOP_LT RELOP_GE RELOP_LE RELOP_EQ RELOP_NE ARITH_PLUS ARITH_MINUS ARITH_MULT ARITH_DIV ARITH_MOD VARIADIC BOOL_LITERAL INT_LITERAL FLOAT_LITERAL STRING_LITERAL EOL
 
 %type <boolval> BOOL_LITERAL
 %type <strval> ID STRING_LITERAL
@@ -130,27 +125,30 @@ funDec: type ID LPAREN params RPAREN SEMICOLON {
 };
 
 funDef: type ID LPAREN params RPAREN LBRACE varDecs stmts RBRACE {
-  /* Fill in this block. (This will be the largest one)
-   * You can follow these steps to create the function and assign its behavior correctly:
+  /* You can follow these steps to create the function and assign its behavior correctly:
    * - First, change the vector "stmts" into an ASTStatementBlock (this will need to be a unique pointer).
    * - Then, create the parameters and make the function, as above.
    * - Add the variables in "varDecs" to the function as stack variables.
    * - Define the function by the ASTStatementBlock. */
+
+   auto statements = new ASTStatementBlock();
+   for (auto s : *$8){
+    statements->statements.push_back(std::unique_ptr<ASTStatement>(s));
+   }
+
    auto parameters = ASTFunctionParameters();
    bool variadic = false;
    for(auto p : *$4) {
-    if(p) parameters.push_back(std::move(*p));
+    if (p) parameters.push_back(std::move(*p));
     else variadic = true;
    }
    auto f = ast.AddFunction($2, std::unique_ptr<VarType>($1), std::move(parameters), variadic);
-   for(auto v : *$7) {
-    f -> AddStackVar(std::move(*v));
+
+   for (auto p : *$7) {
+    f->AddStackVar(std::move(*p));
    }
-   auto stmts = std::make_unique<ASTStatementBlock>();
-   for(auto s : *$8) {
-    stmts -> statements.push_back(std::unique_ptr<ASTStatement>(s));
-   }
-   f -> Define(std::move(stmts));
+
+   f->Define(std::unique_ptr<ASTStatement>(statements));
  };
 params: paramList | {$$ = new std::vector<ASTFunctionParameter *>();};
 paramList: paramList COMMA type ID { // This works similarly to varDecs
@@ -192,11 +190,14 @@ selStmt: IF LPAREN expr RPAREN stmt {
 
 iterStmt: WHILE LPAREN expr RPAREN stmt {
   $$ = new ASTStatementWhile(std::unique_ptr<ASTExpression>($3), std::unique_ptr<ASTStatement>($5));
- } | FOR LPAREN exprStmt orExpr SEMICOLON expr RPAREN stmt {
-  $$ = new ASTStatementFor(std::unique_ptr<ASTStatement>($3), std::unique_ptr<ASTExpression>($4), std::unique_ptr<ASTStatement>($6), std::unique_ptr<ASTStatement>($8));
+ } | FOR LPAREN stmt COMMA expr COMMA stmt RPAREN stmt {
+  $$ = new ASTStatementFor(
+    std::unique_ptr<ASTStatement>($9),
+    std::unique_ptr<ASTStatement>($3),
+    std::unique_ptr<ASTExpression>($5),
+    std::unique_ptr<ASTStatement>($7)
+  );
  };
-
-/* fill in grammar and code action for for-loops */
 
 
 jumpStmt: RETURN SEMICOLON {
@@ -204,13 +205,15 @@ jumpStmt: RETURN SEMICOLON {
   retStmt->returnExpression = std::unique_ptr<ASTExpression>(nullptr);
   $$ = retStmt;
  }| RETURN expr SEMICOLON {
-  auto retStmt = new ASTStatementReturn();
-  retStmt -> returnExpression = std::unique_ptr<ASTExpression>($2);
-  $$ = retStmt;
- }; /* There should also be break statements here, but they are not implemented in the AST */
+    auto retStmt = new ASTStatementReturn();
+    retStmt->returnExpression = std::unique_ptr<ASTExpression>($2);
+    $$ = retStmt;
+ } | BREAK SEMICOLON {
+    $$ = new ASTStatementBreak();
+ };
 
 expr: orExpr { $$ = $1;} | ID EQUALS_SIGN expr {
-  $$ = new ASTExpressionAssignment(std::make_unique<ASTExpressionVariable>($1), std::unique_ptr<ASTExpression>($3));
+  $$ = new ASTExpressionAssignment(ASTExpressionVariable::Create($1), std::unique_ptr<ASTExpression>($3));
  };
 orExpr: andExpr {$$ = $1;} | orExpr LOGICAL_OR andExpr {
   $$ = new ASTExpressionOr(std::unique_ptr<ASTExpression>($1), std::unique_ptr<ASTExpression>($3));
@@ -278,7 +281,15 @@ call: ID LPAREN args RPAREN {
    $$ = new std::vector<ASTExpression *>();
    $$->push_back($1);
  } ;
-constant: int_lit {$$ = new ASTExpressionInt($1);} | flt_lit {$$ = new ASTExpressionFloat($1);} | STRING_LITERAL {$$ = new ASTExpressionString(std::string($1));};
+constant: int_lit {
+  $$ = new ASTExpressionInt($1);
+} | flt_lit {
+  $$ = new ASTExpressionFloat($1);
+} | STRING_LITERAL {
+  $$ = new ASTExpressionString(std::string($1));
+} | BOOL_LITERAL {
+  $$ = new ASTExpressionBool($1);
+};
 int_lit: INT_LITERAL | ARITH_MINUS INT_LITERAL {$$ = -1 * $2;};
 flt_lit: FLOAT_LITERAL | ARITH_MINUS FLOAT_LITERAL {$$ = -1 * $2;};
 

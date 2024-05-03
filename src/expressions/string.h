@@ -11,21 +11,22 @@ class ASTExpressionString : public ASTExpression
     std::string value;
 
 public:
+    // Create a new constant string expression.
+    // str: Constant string value to create.
+    explicit ASTExpressionString(std::string str) : value(std::move(str)) {}
 
     // Create a new constant string expression.
     // str: Constant string value to create.
-    explicit ASTExpressionString(std::string  str) : value(std::move(str)) {}
-
-    // Create a new constant string expression.
-    // str: Constant string value to create.
-    static auto Create(const std::string& str)
+    static auto Create(const std::string &str)
     {
         return std::make_unique<ASTExpressionString>(str);
     }
 
+    void MyOptznPass(std::unique_ptr<ASTExpression> &parentPtr, ASTFunction &func) override {}
+
     // Virtual functions. See base class for details.
-    std::unique_ptr<VarType> ReturnType(ASTFunction& func) override;
-    bool IsLValue(ASTFunction& func) override;
-    llvm::Value* Compile(llvm::IRBuilder<>& builder, ASTFunction& func) override;
-    std::string ToString(const std::string& prefix) override;
+    std::unique_ptr<VarType> ReturnType(ASTFunction &func) override;
+    bool IsLValue(ASTFunction &func) override;
+    llvm::Value *Compile(llvm::IRBuilder<> &builder, ASTFunction &func) override;
+    std::string ToString(const std::string &prefix) override;
 };

@@ -24,7 +24,6 @@ class ASTExpressionComparison : public ASTExpression
     std::unique_ptr<ASTExpression> a2;
 
 public:
-
     // Create a new comparison expression.
     // type: Type of comparison to do.
     // a1: Left operand.
@@ -40,9 +39,11 @@ public:
         return std::make_unique<ASTExpressionComparison>(type, std::move(a1), std::move(a2));
     }
 
+    void MyOptznPass(std::unique_ptr<ASTExpression> &parentPtr, ASTFunction &func) override;
+
     // Virtual functions. See base class for details.
-    std::unique_ptr<VarType> ReturnType(ASTFunction& func) override;
-    bool IsLValue(ASTFunction& func) override;
-    llvm::Value* Compile(llvm::IRBuilder<>& builder, ASTFunction& func) override;
-    std::string ToString(const std::string& prefix) override;
+    std::unique_ptr<VarType> ReturnType(ASTFunction &func) override;
+    bool IsLValue(ASTFunction &func) override;
+    llvm::Value *Compile(llvm::IRBuilder<> &builder, ASTFunction &func) override;
+    std::string ToString(const std::string &prefix) override;
 };

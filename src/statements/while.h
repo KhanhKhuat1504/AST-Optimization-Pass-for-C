@@ -14,7 +14,6 @@ class ASTStatementWhile : public ASTStatement
     std::unique_ptr<ASTStatement> thenStatement;
 
 public:
-
     // Create a new while statement.
     // condition: Condition to check.
     // thenStatement: Statement to execute while the condition is true.
@@ -28,9 +27,10 @@ public:
         return std::make_unique<ASTStatementWhile>(std::move(condition), std::move(thenStatement));
     }
 
-    // Virtual functions. See base class for details.
-    virtual std::unique_ptr<VarType> StatementReturnType(ASTFunction& func) override;
-    virtual void Compile(llvm::Module& mod, llvm::IRBuilder<>& builder, ASTFunction& func) override;
-    virtual std::string ToString(const std::string& prefix) override;
+    void MyOptznPass(std::unique_ptr<ASTStatement> &parentPtr, ASTFunction &func) override;
 
+    // Virtual functions. See base class for details.
+    virtual std::unique_ptr<VarType> StatementReturnType(ASTFunction &func) override;
+    virtual void Compile(llvm::Module &mod, llvm::IRBuilder<> &builder, ASTFunction &func) override;
+    virtual std::string ToString(const std::string &prefix) override;
 };

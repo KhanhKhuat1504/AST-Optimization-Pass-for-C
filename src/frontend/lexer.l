@@ -13,6 +13,8 @@ static std::stringstream ss;
 "int"                     {return INT_TYPE;}
 "float"                   {return FLOAT_TYPE;}
 "string"                  {return STRING_TYPE;}
+"true"                    {yylval.boolval = true; return BOOL_LITERAL;}
+"false"                   {yylval.boolval = false; return BOOL_LITERAL;}
 "void" {return VOID_TYPE;}
 "bool" {return BOOL_TYPE;}
 ";" {return SEMICOLON;}
@@ -24,6 +26,7 @@ static std::stringstream ss;
 "if" {return IF;}
 "else" {return ELSE;}
 "while" {return WHILE;}
+"for" {return FOR;}
 "break" {return BREAK;}
 "return" {return RETURN;}
 "=" {return EQUALS_SIGN;}
@@ -42,7 +45,6 @@ static std::stringstream ss;
 "/" {return ARITH_DIV;}
 "%" {return ARITH_MOD;}
 "..." {return VARIADIC;}
-"false" | "true" {yylval.boolval = strcmp(yytext, "true") == 0; return BOOL_LITERAL;}
 [0-9]+ {yylval.intval = atoi(yytext); return INT_LITERAL;}
 ([0-9]+[.])?[0-9]+ {yylval.fltval = atof(yytext); return FLOAT_LITERAL;}
 
@@ -56,7 +58,7 @@ static std::stringstream ss;
 <strlit>\n          { printf("Found newline in string\n"); }
 
 [_a-zA-Z][_a-zA-Z0-9]* {yylval.strval = strdup(yytext); return ID;}
-. {printf("Unrecognized character %c\n", *yytext);}
+. {}
 %%
 
   /*int main(int argc, char **argv) {

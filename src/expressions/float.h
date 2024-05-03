@@ -9,7 +9,6 @@ class ASTExpressionFloat : public ASTExpression
     double value;
 
 public:
-
     // Create a new constant float expression.
     // val: Constant float value to create.
     explicit ASTExpressionFloat(double val) : value(val) {}
@@ -21,9 +20,11 @@ public:
         return std::make_unique<ASTExpressionFloat>(val);
     }
 
+    void MyOptznPass(std::unique_ptr<ASTExpression> &parentPtr, ASTFunction &func) override {}
+
     // Virtual functions. See base class for details.
-    std::unique_ptr<VarType> ReturnType(ASTFunction& func) override;
-    bool IsLValue(ASTFunction& func) override;
-    llvm::Value* Compile(llvm::IRBuilder<>& builder, ASTFunction& func) override;
-    std::string ToString(const std::string& prefix) override;
+    std::unique_ptr<VarType> ReturnType(ASTFunction &func) override;
+    bool IsLValue(ASTFunction &func) override;
+    llvm::Value *Compile(llvm::IRBuilder<> &builder, ASTFunction &func) override;
+    std::string ToString(const std::string &prefix) override;
 };

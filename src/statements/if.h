@@ -17,7 +17,6 @@ class ASTStatementIf : public ASTStatement
     std::unique_ptr<ASTStatement> elseStatement;
 
 public:
-
     // Create a new if statement.
     // condition: Condition to check.
     // thenStatement: Statement to execute if the condition is true.
@@ -33,9 +32,10 @@ public:
         return std::make_unique<ASTStatementIf>(std::move(condition), std::move(thenStatement), std::move(elseStatement));
     }
 
-    // Virtual functions. See base class for details.
-    virtual std::unique_ptr<VarType> StatementReturnType(ASTFunction& func) override;
-    virtual void Compile(llvm::Module& mod, llvm::IRBuilder<>& builder, ASTFunction& func) override;
-    virtual std::string ToString(const std::string& prefix) override;
+    void MyOptznPass(std::unique_ptr<ASTStatement> &parentPtr, ASTFunction &func) override;
 
+    // Virtual functions. See base class for details.
+    virtual std::unique_ptr<VarType> StatementReturnType(ASTFunction &func) override;
+    virtual void Compile(llvm::Module &mod, llvm::IRBuilder<> &builder, ASTFunction &func) override;
+    virtual std::string ToString(const std::string &prefix) override;
 };

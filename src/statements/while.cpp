@@ -2,15 +2,22 @@
 
 #include "../function.h"
 
-std::unique_ptr<VarType> ASTStatementWhile::StatementReturnType(ASTFunction& func)
+std::unique_ptr<VarType> ASTStatementWhile::StatementReturnType(ASTFunction &func)
 {
 
     // It is completely possible for a while's condition to never be true, so even if does return something it's not confirmed.
     return nullptr;
-
 }
 
-void ASTStatementWhile::Compile(llvm::Module& mod, llvm::IRBuilder<>& builder, ASTFunction& func)
+void ASTStatementWhile::MyOptznPass(std::unique_ptr<ASTStatement> &parentPtr, ASTFunction &func)
+{
+    if (condition)
+        condition->MyOptznPass(condition, func);
+    if (thenStatement)
+        thenStatement->MyOptznPass(thenStatement, func);
+}
+
+void ASTStatementWhile::Compile(llvm::Module &mod, llvm::IRBuilder<> &builder, ASTFunction &func)
 {
 
     /*
@@ -37,10 +44,11 @@ void ASTStatementWhile::Compile(llvm::Module& mod, llvm::IRBuilder<>& builder, A
     */
 
     // Create the basic blocks.
-    auto* funcVal = (llvm::Function*)func.GetVariableValue(func.name);
+    auto *funcVal = (llvm::Function *)func.GetVariableValue(func.name);
     auto whileLoop = llvm::BasicBlock::Create(builder.getContext(), "whileLoop", funcVal);
     auto whileLoopBody = llvm::BasicBlock::Create(builder.getContext(), "whileLoopBody", funcVal);
     auto whileLoopEnd = llvm::BasicBlock::Create(builder.getContext(), "whileLoopEnd", funcVal);
+    auto whileLoopEnds = llvm::BasicBlock::Create(builder.getContext(), "whileLoopEnds", funcVal);
 
     // Jump to the while loop.
     builder.CreateBr(whileLoop);
@@ -53,14 +61,14 @@ void ASTStatementWhile::Compile(llvm::Module& mod, llvm::IRBuilder<>& builder, A
     // Compile the body. Note that we need to not create a jump if there is a return.
     builder.SetInsertPoint(whileLoopBody);
     thenStatement->Compile(mod, builder, func);
-    if (!thenStatement->StatementReturnType(func)) builder.CreateBr(whileLoop);
+    if (!thenStatement->StatementReturnType(func))
+        builder.CreateBr(whileLoop);
 
     // Continue from the end of the created while loop.
     builder.SetInsertPoint(whileLoopEnd);
-
 }
 
-std::string ASTStatementWhile::ToString(const std::string& prefix)
+std::string ASTStatementWhile::ToString(const std::string &prefix)
 {
     std::string output = "while\n";
     output += prefix + "├──" + condition->ToString(prefix + "│  ");

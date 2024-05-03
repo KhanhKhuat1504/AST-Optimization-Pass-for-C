@@ -1,16 +1,22 @@
 #include "float2Int.h"
 
-std::unique_ptr<VarType> ASTExpressionFloat2Int::ReturnType(ASTFunction& func)
+std::unique_ptr<VarType> ASTExpressionFloat2Int::ReturnType(ASTFunction &func)
 {
     return VarTypeSimple::IntType.Copy(); // Of course Float2Int returns an int.
 }
 
-bool ASTExpressionFloat2Int::IsLValue(ASTFunction& func)
+bool ASTExpressionFloat2Int::IsLValue(ASTFunction &func)
 {
     return false; // Even if converting a variable we need to load from it first to convert its raw value into an int.
 }
 
-llvm::Value* ASTExpressionFloat2Int::Compile(llvm::IRBuilder<>& builder, ASTFunction& func)
+void ASTExpressionFloat2Int::MyOptznPass(std::unique_ptr<ASTExpression> &parentPtr, ASTFunction &func)
+{
+    if (operand)
+        operand->MyOptznPass(operand, func);
+}
+
+llvm::Value *ASTExpressionFloat2Int::Compile(llvm::IRBuilder<> &builder, ASTFunction &func)
 {
     // Make sure operand is valid float type.
     if (!operand->ReturnType(func)->Equals(&VarTypeSimple::FloatType))
@@ -20,7 +26,7 @@ llvm::Value* ASTExpressionFloat2Int::Compile(llvm::IRBuilder<>& builder, ASTFunc
     return builder.CreateFPToSI(operand->CompileRValue(builder, func), VarTypeSimple::IntType.GetLLVMType(builder.getContext()));
 }
 
-std::string ASTExpressionFloat2Int::ToString(const std::string& prefix)
+std::string ASTExpressionFloat2Int::ToString(const std::string &prefix)
 {
     return "float2Int\n" + prefix + "└──" + operand->ToString(prefix + "   ");
 }

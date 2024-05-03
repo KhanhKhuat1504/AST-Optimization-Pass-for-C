@@ -4,44 +4,85 @@
 
 std::unique_ptr<VarType> ASTExpressionAnd::ReturnType(ASTFunction &func)
 {
-    return VarTypeSimple::BoolType.Copy(); // a && b is always a boolean.
+    return VarTypeSimple::BoolType.Copy(); // a || b is always a boolean.
 }
 
 bool ASTExpressionAnd::IsLValue(ASTFunction &func)
 {
-    return false;
+    return false; // || operator works on two R-Values to produce an R-Value.
 }
 
-llvm::Value *ASTExpressionAnd::Compile(llvm::IRBuilder<> &builder, ASTFunction &func)
+void ASTExpressionAnd::MyOptznPass(std::unique_ptr<ASTExpression> &parentPtr, ASTFunction &func)
 {
+    ASTExpressionBool *boolPtr = nullptr;
+    if (a1)
+    {
+        boolPtr = dynamic_cast<ASTExpressionBool *>(a1.get());
+        if (boolPtr)
+        {
+            if (boolPtr->GetVal())
+            {
+                parentPtr.reset(a2.release());
+            }
+            else
+            {
+                parentPtr.reset(new ASTExpressionBool(false));
+            }
+        }
+        else
+        {
+            a1->MyOptznPass(a1, func);
+        }
+    }
 
+    if (a2)
+    {
+        boolPtr = dynamic_cast<ASTExpressionBool *>(a2.get());
+        if (boolPtr)
+        {
+            if (boolPtr->GetVal())
+            {
+                parentPtr.reset(a1.release());
+            }
+            else
+            {
+                parentPtr.reset(new ASTExpressionBool(false));
+            }
+        }
+        else
+        {
+            a2->MyOptznPass(a2, func);
+        }
+    }
+}
+
+llvm::Value *ASTExpressionAnd::Compile(llvm::IRBuilder<> &builder, ASTFunction &func) // Hm, this isn't the most efficient approach. I can think of a much easier way...
+{
     // Make sure to cast both sides as booleans first.
     ASTExpression::ImplicitCast(func, a1, &VarTypeSimple::BoolType);
     ASTExpression::ImplicitCast(func, a2, &VarTypeSimple::BoolType);
 
-    // Create blocks.
+    // Create blocks. Check right is if left is false, and we need to check the right one too. Continue block happens if true.
     auto *funcVal = (llvm::Function *)func.GetVariableValue(func.name);
-    auto *falseBlock = llvm::BasicBlock::Create(builder.getContext(), "falseBlock", funcVal);
-    auto *trueBlock = llvm::BasicBlock::Create(builder.getContext(), "trueBlock", funcVal);
-    auto *cont = llvm::BasicBlock::Create(builder.getContext(), "cont", funcVal);
+    llvm::BasicBlock *checkRight = llvm::BasicBlock::Create(builder.getContext(), "checkRight", funcVal);
+    llvm::BasicBlock *cont = llvm::BasicBlock::Create(builder.getContext(), "cont", funcVal);
 
-    auto *leftVal = a1->CompileRValue(builder, func);
-    builder.CreateCondBr(leftVal, trueBlock, falseBlock);
+    // If left is true, then we are done. Just branch to the continue block where we know the final result will be set as true.
+    llvm::Value *leftVal = a1->CompileRValue(builder, func);
+    llvm::BasicBlock *lastBlockLeft = builder.GetInsertBlock(); // Get the current block we are on.
+    builder.CreateCondBr(leftVal, checkRight, cont);            // If return value is true so far we branch to checking the right one, else continue.
 
-    // Compile the right expression
-    builder.SetInsertPoint(trueBlock);
-    auto *rightVal = a2->CompileRValue(builder, func);
-
-    // After evaluating the right side, branch to cont.
-    builder.CreateBr(cont);
-    builder.SetInsertPoint(falseBlock);
+    // Compile the right expression if needed.
+    builder.SetInsertPoint(checkRight);
+    llvm::Value *rightVal = a2->CompileRValue(builder, func);
+    llvm::BasicBlock *lastBlockRight = builder.GetInsertBlock(); // In case the block has changed, fix it.
     builder.CreateBr(cont);
 
-    // Tell LLVM that it should either select the left value and the right one depending on where we came from.
+    // Tell LLVM that it should either select the left value or the right one depending on where we came from.
     builder.SetInsertPoint(cont);
     llvm::PHINode *res = builder.CreatePHI(VarTypeSimple::BoolType.GetLLVMType(builder.getContext()), 2);
-    res->addIncoming(rightVal, trueBlock);
-    res->addIncoming(leftVal, falseBlock);
+    res->addIncoming(leftVal, lastBlockLeft);
+    res->addIncoming(rightVal, lastBlockRight);
     return res;
 }
 

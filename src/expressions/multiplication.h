@@ -2,7 +2,7 @@
 
 #include "../expression.h"
 
-// An expression that multiplies one operand with the other.
+// An expression that subtracts one operand from the other.
 class ASTExpressionMultiplication : public ASTExpression
 {
     // Operands to work with.
@@ -13,18 +13,20 @@ class ASTExpressionMultiplication : public ASTExpression
     VarTypeSimple *returnType = nullptr;
 
 public:
-    // Create a new multiplication expression.
-    // a1: Left side expression of the multiplication statement.
-    // a2: Right side expression of the multiplication statement.
+    // Create a new subtraction expression.
+    // a1: Left side expression of the subtraction statement.
+    // a2: Right side expression of the subtraction statement.
     ASTExpressionMultiplication(std::unique_ptr<ASTExpression> a1, std::unique_ptr<ASTExpression> a2) : a1(std::move(a1)), a2(std::move(a2)) {}
 
-    // Create a new multiplication expression.
-    // a1: Left side expression of the multiplication statement.
-    // a2: Right side expression of the multiplication statement.
+    // Create a new subtraction expression.
+    // a1: Left side expression of the subtraction statement.
+    // a2: Right side expression of the subtraction statement.
     static auto Create(std::unique_ptr<ASTExpression> a1, std::unique_ptr<ASTExpression> a2)
     {
         return std::make_unique<ASTExpressionMultiplication>(std::move(a1), std::move(a2));
     }
+
+    void MyOptznPass(std::unique_ptr<ASTExpression> &parentPtr, ASTFunction &func) override;
 
     // Virtual functions. See base class for details.
     std::unique_ptr<VarType> ReturnType(ASTFunction &func) override;

@@ -2,6 +2,9 @@ int puts(string str);
 
 int main()
 {
-    puts("Hello World!");
+    if (true && 1 < 3)
+    {
+        puts("Hello World!");
+    }
     return 0;
 }

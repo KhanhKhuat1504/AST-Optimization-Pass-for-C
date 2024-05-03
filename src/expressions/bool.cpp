@@ -2,18 +2,20 @@
 
 std::unique_ptr<VarType> ASTExpressionBool::ReturnType(ASTFunction &func)
 {
-    return VarTypeSimple::BoolType.Copy();
+    return VarTypeSimple::BoolType.Copy(); // Of course we are returning an int, what else would it be.
 }
 
 bool ASTExpressionBool::IsLValue(ASTFunction &func)
 {
-    return false;
+    return false; // It's a constant, of course it's not an L-Value.
 }
 
 llvm::Value *ASTExpressionBool::Compile(llvm::IRBuilder<> &builder, ASTFunction &func)
 {
-    // Finally compile the cast, we must use an R-Value to cast (we can't just use a raw variable).
-    return llvm::ConstantInt::get(VarTypeSimple::BoolType.GetLLVMType(builder.getContext()), value);
+    if (value)
+        return llvm::ConstantInt::get(VarTypeSimple::BoolType.GetLLVMType(builder.getContext()), 1);
+    else
+        return llvm::ConstantInt::get(VarTypeSimple::BoolType.GetLLVMType(builder.getContext()), 0);
 }
 
 std::string ASTExpressionBool::ToString(const std::string &prefix)

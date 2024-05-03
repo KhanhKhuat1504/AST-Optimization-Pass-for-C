@@ -10,6 +10,12 @@ bool ASTExpressionInt2Bool::IsLValue(ASTFunction &func)
     return false; // Even if converting a variable we need to load from it first to convert its raw value into a bool.
 }
 
+void ASTExpressionInt2Bool::MyOptznPass(std::unique_ptr<ASTExpression> &parentPtr, ASTFunction &func)
+{
+    if (operand)
+        operand->MyOptznPass(operand, func);
+}
+
 llvm::Value *ASTExpressionInt2Bool::Compile(llvm::IRBuilder<> &builder, ASTFunction &func)
 {
     // Make sure operand is valid int type.
@@ -17,7 +23,7 @@ llvm::Value *ASTExpressionInt2Bool::Compile(llvm::IRBuilder<> &builder, ASTFunct
         throw std::runtime_error("ERROR: Expected integer operand in int2bool but got another type instead!");
 
     // Finally compile the cast, we must use an R-Value to cast (we can't just use a raw variable).
-    return builder.CreateSIToFP(operand->CompileRValue(builder, func), VarTypeSimple::BoolType.GetLLVMType(builder.getContext()));
+    return builder.CreateICmpNE(operand->CompileRValue(builder, func), llvm::ConstantInt::get(VarTypeSimple::IntType.GetLLVMType(builder.getContext()), 0));
 }
 
 std::string ASTExpressionInt2Bool::ToString(const std::string &prefix)

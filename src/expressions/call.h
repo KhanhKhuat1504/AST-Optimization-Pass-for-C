@@ -14,7 +14,6 @@ class ASTExpressionCall : public ASTExpression
     std::vector<std::unique_ptr<ASTExpression>> arguments;
 
 public:
-
     // Create a new call expression.
     // callee: The expression to call.
     // arguments: Arguments to pass to the call.
@@ -28,10 +27,11 @@ public:
         return std::make_unique<ASTExpressionCall>(std::move(callee), std::move(arguments));
     }
 
-    // Virtual functions. See base class for details.
-    std::unique_ptr<VarType> ReturnType(ASTFunction& func) override;
-    bool IsLValue(ASTFunction& func) override;
-    llvm::Value* Compile(llvm::IRBuilder<>& builder, ASTFunction& func) override;
-    std::string ToString(const std::string& prefix) override;
+    void MyOptznPass(std::unique_ptr<ASTExpression> &parentPtr, ASTFunction &func) override;
 
+    // Virtual functions. See base class for details.
+    std::unique_ptr<VarType> ReturnType(ASTFunction &func) override;
+    bool IsLValue(ASTFunction &func) override;
+    llvm::Value *Compile(llvm::IRBuilder<> &builder, ASTFunction &func) override;
+    std::string ToString(const std::string &prefix) override;
 };

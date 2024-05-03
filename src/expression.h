@@ -23,7 +23,6 @@ public:
     // func: Function that contains this expression.
     // Returns: If this expression results in an L-Value.
     virtual bool IsLValue(ASTFunction &func) = 0;
-
     // Compile the expression and get its returned value.
     // builder: LLVM IR builder.
     // func: Function that contains this expression.
@@ -64,14 +63,13 @@ public:
     // DO NOT CALL THIS FROM EXPRESSION SUBCLASSES! THERE'S A GOOD CHANCE IT WON'T DO WHAT YOU WANT IT TO!
     std::unique_ptr<VarType> StatementReturnType(ASTFunction &func) override;
 
+    void MyOptznPass(std::unique_ptr<ASTStatement> &parentPtr, ASTFunction &func) override {}
+
+    virtual void MyOptznPass(std::unique_ptr<ASTExpression> &parentPtr, ASTFunction &func) = 0;
+
     // DO NOT CALL THIS FROM EXPRESSION SUBCLASSES! THERE'S A GOOD CHANCE IT WON'T DO WHAT YOU WANT IT TO!
     void Compile(llvm::Module &mod, llvm::IRBuilder<> &builder, ASTFunction &func) override;
 
     // Must make the destructor virtual to make the compiler happy.
     ~ASTExpression() override = default;
-
-    // Optimize boolean expressions within the statement.
-    // func: AST function to optimize.
-    // Returns: true if any optimization was performed, false otherwise.
-    virtual bool BooleanPass(ASTFunction &func) = 0;
 };

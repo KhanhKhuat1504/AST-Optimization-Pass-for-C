@@ -1,6 +1,6 @@
 #include "addition.h"
 
-std::unique_ptr<VarType> ASTExpressionAddition::ReturnType(ASTFunction& func)
+std::unique_ptr<VarType> ASTExpressionAddition::ReturnType(ASTFunction &func)
 {
     if (!returnType) // If the return type has not been gotten yet.
     {
@@ -10,12 +10,20 @@ std::unique_ptr<VarType> ASTExpressionAddition::ReturnType(ASTFunction& func)
     return std::make_unique<VarTypeSimple>(*returnType); // Make a copy of our return type :}
 }
 
-bool ASTExpressionAddition::IsLValue(ASTFunction& func)
+bool ASTExpressionAddition::IsLValue(ASTFunction &func)
 {
     return false; // If we are adding values together, they must be usable R-Values. Adding these together just results in an R-Value.
 }
 
-llvm::Value* ASTExpressionAddition::Compile(llvm::IRBuilder<>& builder, ASTFunction& func)
+void ASTExpressionAddition::MyOptznPass(std::unique_ptr<ASTExpression> &parentPtr, ASTFunction &func)
+{
+    if (a1)
+        a1->MyOptznPass(a1, func);
+    if (a2)
+        a2->MyOptznPass(a2, func);
+}
+
+llvm::Value *ASTExpressionAddition::Compile(llvm::IRBuilder<> &builder, ASTFunction &func)
 {
     // Compile the values as needed. Remember, we can only do operations on R-Values.
     auto retType = ReturnType(func);
@@ -27,7 +35,7 @@ llvm::Value* ASTExpressionAddition::Compile(llvm::IRBuilder<>& builder, ASTFunct
         throw std::runtime_error("ERROR: Can not perform addition! Are both inputs either ints or floats?");
 }
 
-std::string ASTExpressionAddition::ToString(const std::string& prefix)
+std::string ASTExpressionAddition::ToString(const std::string &prefix)
 {
     std::string ret = "(+)\n";
     ret += prefix + "├──" + a1->ToString(prefix + "│  ");

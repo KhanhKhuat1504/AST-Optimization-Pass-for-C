@@ -3,13 +3,10 @@
 #include "../statement.h"
 #include "../expression.h"
 
-class ASTStatementReturn : public ASTStatement
+class ASTStatementBreak : public ASTStatement
 {
 public:
-    // expression to return
-    std::unique_ptr<ASTExpression> returnExpression;
-
-    void MyOptznPass(std::unique_ptr<ASTStatement> &parentPtr, ASTFunction &func) override;
+    void MyOptznPass(std::unique_ptr<ASTStatement> &parentPtr, ASTFunction &func) override {}
 
     // Virtual functions. See base class for details.
     std::unique_ptr<VarType> StatementReturnType(ASTFunction &func) override;

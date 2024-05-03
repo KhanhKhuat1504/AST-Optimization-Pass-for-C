@@ -10,10 +10,9 @@ class ASTExpressionAddition : public ASTExpression
     std::unique_ptr<ASTExpression> a2;
 
     // Return type to cache.
-    VarTypeSimple* returnType = nullptr;
+    VarTypeSimple *returnType = nullptr;
 
 public:
-
     // Create a new addition expression.
     // a1: Left side expression of the addition statement.
     // a2: Right side expression of the addition statement.
@@ -27,9 +26,11 @@ public:
         return std::make_unique<ASTExpressionAddition>(std::move(a1), std::move(a2));
     }
 
+    void MyOptznPass(std::unique_ptr<ASTExpression> &parentPtr, ASTFunction &func) override;
+
     // Virtual functions. See base class for details.
-    std::unique_ptr<VarType> ReturnType(ASTFunction& func) override;
-    bool IsLValue(ASTFunction& func) override;
-    llvm::Value* Compile(llvm::IRBuilder<>& builder, ASTFunction& func) override;
-    std::string ToString(const std::string& prefix) override;
+    std::unique_ptr<VarType> ReturnType(ASTFunction &func) override;
+    bool IsLValue(ASTFunction &func) override;
+    llvm::Value *Compile(llvm::IRBuilder<> &builder, ASTFunction &func) override;
+    std::string ToString(const std::string &prefix) override;
 };

@@ -10,6 +10,14 @@ bool ASTExpressionComparison::IsLValue(ASTFunction &func)
     return false; // If we are adding values together, they must be usable R-Values. Adding these together just results in an R-Value.
 }
 
+void ASTExpressionComparison::MyOptznPass(std::unique_ptr<ASTExpression> &parentPtr, ASTFunction &func)
+{
+    if (a1)
+        a1->MyOptznPass(a1, func);
+    if (a2)
+        a2->MyOptznPass(a2, func);
+}
+
 llvm::Value *ASTExpressionComparison::Compile(llvm::IRBuilder<> &builder, ASTFunction &func)
 {
     VarTypeSimple *returnType;
@@ -26,42 +34,44 @@ llvm::Value *ASTExpressionComparison::Compile(llvm::IRBuilder<> &builder, ASTFun
         switch (type)
         {
         case Equal:
-            return builder.CreateCmp(llvm::CmpInst::ICMP_EQ, a1Val, a2Val);
+            return builder.CreateICmp(llvm::CmpInst::ICMP_EQ, a1Val, a2Val);
         case NotEqual:
-            return builder.CreateCmp(llvm::CmpInst::ICMP_NE, a1Val, a2Val);
+            return builder.CreateICmp(llvm::CmpInst::ICMP_NE, a1Val, a2Val);
         case LessThan:
-            return builder.CreateCmp(llvm::CmpInst::ICMP_SLT, a1Val, a2Val);
+            return builder.CreateICmp(llvm::CmpInst::ICMP_SLT, a1Val, a2Val);
         case LessThanOrEqual:
-            return builder.CreateCmp(llvm::CmpInst::ICMP_SLE, a1Val, a2Val);
+            return builder.CreateICmp(llvm::CmpInst::ICMP_SLE, a1Val, a2Val);
         case GreaterThan:
-            return builder.CreateCmp(llvm::CmpInst::ICMP_SGT, a1Val, a2Val);
+            return builder.CreateICmp(llvm::CmpInst::ICMP_SGT, a1Val, a2Val);
         case GreaterThanOrEqual:
-            return builder.CreateCmp(llvm::CmpInst::ICMP_SGE, a1Val, a2Val);
+            return builder.CreateICmp(llvm::CmpInst::ICMP_SGE, a1Val, a2Val);
         }
     }
 
     // Float type, do float comparisons.
-    if (returnType->Equals(&VarTypeSimple::FloatType))
+    else if (returnType->Equals(&VarTypeSimple::FloatType))
     {
         switch (type)
         {
         case Equal:
-            return builder.CreateCmp(llvm::CmpInst::FCMP_OEQ, a1Val, a2Val); // Use ordered operations to not allow NANS.
+            return builder.CreateFCmp(llvm::CmpInst::ICMP_EQ, a1Val, a2Val);
         case NotEqual:
-            return builder.CreateCmp(llvm::CmpInst::FCMP_ONE, a1Val, a2Val);
+            return builder.CreateFCmp(llvm::CmpInst::ICMP_NE, a1Val, a2Val);
         case LessThan:
-            return builder.CreateCmp(llvm::CmpInst::FCMP_OLT, a1Val, a2Val);
+            return builder.CreateFCmp(llvm::CmpInst::ICMP_SLT, a1Val, a2Val);
         case LessThanOrEqual:
-            return builder.CreateCmp(llvm::CmpInst::FCMP_OLE, a1Val, a2Val);
+            return builder.CreateFCmp(llvm::CmpInst::ICMP_SLE, a1Val, a2Val);
         case GreaterThan:
-            return builder.CreateCmp(llvm::CmpInst::FCMP_OGT, a1Val, a2Val);
+            return builder.CreateFCmp(llvm::CmpInst::ICMP_SGT, a1Val, a2Val);
         case GreaterThanOrEqual:
-            return builder.CreateCmp(llvm::CmpInst::FCMP_OGE, a1Val, a2Val);
+            return builder.CreateFCmp(llvm::CmpInst::ICMP_SGE, a1Val, a2Val);
         }
     }
 
-    // How did we get here?
-    throw std::runtime_error("ERROR: Did not return value from comparison. Unsuccessful coercion of values or invalid comparison type!");
+    else
+    {
+        throw std::runtime_error("ERROR: Did not return value from comparison. Unsuccessful coercion of values or invalid comparison type!");
+    }
 }
 
 std::string ASTExpressionComparison::ToString(const std::string &prefix)
