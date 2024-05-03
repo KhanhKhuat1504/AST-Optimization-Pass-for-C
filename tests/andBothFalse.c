@@ -2,7 +2,7 @@ int puts(string str);
 
 int main()
 {
-    if (true && 1 < 3)
+    if (false && false)
     {
         puts("Hello World!");
     }
