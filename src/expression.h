@@ -63,6 +63,8 @@ public:
     // DO NOT CALL THIS FROM EXPRESSION SUBCLASSES! THERE'S A GOOD CHANCE IT WON'T DO WHAT YOU WANT IT TO!
     std::unique_ptr<VarType> StatementReturnType(ASTFunction &func) override;
 
+    virtual bool IsConstant() { return false; }
+
     void MyOptznPass(std::unique_ptr<ASTStatement> &parentPtr, ASTFunction &func) override {}
 
     virtual void MyOptznPass(std::unique_ptr<ASTExpression> &parentPtr, ASTFunction &func) = 0;

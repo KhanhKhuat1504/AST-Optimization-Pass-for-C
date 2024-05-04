@@ -20,6 +20,10 @@ public:
         return std::make_unique<ASTExpressionInt>(val);
     }
 
+    int GetVal() { return value; }
+
+    bool IsConstant() override { return true; }
+
     void MyOptznPass(std::unique_ptr<ASTExpression> &parentPtr, ASTFunction &func) override {}
 
     // Virtual functions. See base class for details.
