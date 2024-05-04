@@ -25,12 +25,32 @@ std::unique_ptr<VarType> ASTStatementBlock::StatementReturnType(ASTFunction &fun
 
 void ASTStatementBlock::MyOptznPass(std::unique_ptr<ASTStatement> &parentPtr, ASTFunction &func)
 {
+
     for (std::unique_ptr<ASTStatement> &statement : statements)
     {
         statement->MyOptznPass(statement, func);
         if (statement->StatementReturnType(func))
             return;
     }
+
+    std::vector<std::unique_ptr<ASTStatement>>::iterator iter;
+    int i = 0;
+    while (i < statements.size())
+    {
+        ASTStatementBlock *blackStmt = dynamic_cast<ASTStatementBlock *>((*iter).get());
+        if (blackStmt)
+        {
+            statements.erase(statements.begin() + i);
+            // statements.insert(statements.begin() + i, blackStmt->statements.begin(), blackStmt->statements.end());
+        }
+        else
+        {
+            i++;
+        }
+    }
+
+    // Block : stmt block stmt stmt stmt stmt stmt block stm
+    //              ^
 }
 
 void ASTStatementBlock::Compile(llvm::Module &mod, llvm::IRBuilder<> &builder, ASTFunction &func)

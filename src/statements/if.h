@@ -1,12 +1,12 @@
 #pragma once
 
-#include "../expression.h"
+#include "../expressions/and.h"
 #include "../statement.h"
 
 // For an if condition statement.
 class ASTStatementIf : public ASTStatement
 {
-
+protected:
     // Condition to check.
     std::unique_ptr<ASTExpression> condition;
 

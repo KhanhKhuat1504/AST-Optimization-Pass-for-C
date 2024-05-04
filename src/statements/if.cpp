@@ -34,15 +34,38 @@ void ASTStatementIf::MyOptznPass(std::unique_ptr<ASTStatement> &parentPtr, ASTFu
 
     if (condition->IsConstant() && condition->ReturnType(func)->Equals(&VarTypeSimple::BoolType))
     {
-        if (dynamic_cast<ASTExpressionBool *>(condition.get())->GetVal())
+        if (dynamic_cast<ASTExpressionBool *>(condition.get())->GetVal() && thenStatement)
         {
             thenStatement->MyOptznPass(thenStatement, func);
             parentPtr.reset(thenStatement.release());
+            return;
         }
-        else
+        else if (elseStatement)
         {
             elseStatement->MyOptznPass(elseStatement, func);
             parentPtr.reset(elseStatement.release());
+            return;
+        }
+    }
+
+    if (thenStatement)
+        thenStatement->MyOptznPass(thenStatement, func);
+    if (elseStatement)
+        elseStatement->MyOptznPass(elseStatement, func);
+
+    if (!elseStatement && thenStatement)
+    {
+        ASTStatementBlock *bockThen = dynamic_cast<ASTStatementBlock *>(thenStatement.get());
+        if (bockThen && bockThen->statements.size() == 1)
+        {
+            ASTStatementIf *ifThen = dynamic_cast<ASTStatementIf *>(bockThen->statements[0].get());
+            if (ifThen && !ifThen->elseStatement)
+            {
+                std::cout << "Only one stmt in body and its IF" << std::endl;
+                condition.reset(new ASTExpressionAnd(std::move(condition), std::move(ifThen->condition)));
+
+                thenStatement.reset(ifThen->thenStatement.release());
+            }
         }
     }
 }
