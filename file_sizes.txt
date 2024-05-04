@@ -1,0 +1,11 @@
+File Sizes of .ll Files
+-----------------------
+0	tests/andBothFalse.ll
+0	tests/andBothTrue.ll
+0	tests/andFalse.ll
+4.0K	tests/andOr.ll
+4.0K	tests/andTrue.ll
+0	tests/orBothFalse.ll
+0	tests/orBothTrue.ll
+0	tests/orFalse.ll
+0	tests/orTrue.ll
