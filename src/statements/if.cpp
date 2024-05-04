@@ -32,39 +32,17 @@ void ASTStatementIf::MyOptznPass(std::unique_ptr<ASTStatement> &parentPtr, ASTFu
         condition->MyOptznPass(condition, func);
     }
 
-    ASTExpressionBool *condBool = dynamic_cast<ASTExpressionBool *>(condition.get());
-    if (condBool)
+    if (condition->IsConstant() && condition->ReturnType(func)->Equals(&VarTypeSimple::BoolType))
     {
-        if (condBool->GetVal())
+        if (dynamic_cast<ASTExpressionBool *>(condition.get())->GetVal())
         {
-            if (thenStatement)
-            {
-                thenStatement->MyOptznPass(thenStatement, func);
-                parentPtr = std::move(thenStatement);
-            }
+            thenStatement->MyOptznPass(thenStatement, func);
+            parentPtr.reset(thenStatement.release());
         }
         else
         {
-            if (!elseStatement)
-            {
-                parentPtr.reset();
-            }
-            else
-            {
-                elseStatement->MyOptznPass(elseStatement, func);
-                parentPtr = std::move(elseStatement);
-            }
-        }
-    }
-    else
-    {
-        if (thenStatement)
-        {
-            thenStatement->MyOptznPass(thenStatement, func);
-        }
-        if (elseStatement)
-        {
             elseStatement->MyOptznPass(elseStatement, func);
+            parentPtr.reset(elseStatement.release());
         }
     }
 }
