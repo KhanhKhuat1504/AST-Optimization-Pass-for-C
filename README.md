@@ -19,10 +19,10 @@ Case Western Reserve University
 The optimization pass identifies inefficient Boolean expressions within the AST and simplifies them using predefined rules and pattern matching. Modifications include node replacement, removal, and addition to optimize overall code execution.
 
 ## Testing Methodology
-- **Performance Metrics**: Evaluation based on AST structures, compiled binary size, compilation time, and runtime memory and CPU resource usage.
+- **Performance Metrics**: Evaluation based on AST structures and compiled binary size  
 - **Test Environment**: Tests conducted using the Windows Subsystem for Linux (WSL).
 
-## Results and Conclusion
+## Results
 Example:
 ```c
 int puts(string str);
@@ -49,7 +49,15 @@ int main()
   </tr>
 </table>
 
-After optimization, the if condition would be just True because (5 > 3) returns True -> (5 > 3 || 10 > 7) would be True without validating (10 > 7) which would make the whole if condition True without validating (4 >= 5 && 10 <= 12). This is the Identity Law from Boolean Algebra.    
+After optimization, the if condition would be just True because (5 > 3) returns True -> (5 > 3 || 10 > 7) would be True without validating (10 > 7) which would make the whole if condition True without validating (4 >= 5 && 10 <= 12). This is the Identity Law from Boolean Algebra. 
+
+We also see a great enhancement in IR file size after applying our optimization pass:  
+<div align="center">
+  <img src="IRcompare.png" alt="IR file size comparison" title="IR File Size Comparison">
+</div>
+
+## Conclusion
+The implementation of a Boolean optimization pass in this project significantly enhances the efficiency of compiling C code by directly manipulating the AST to optimize Boolean expressions. Through the application of Boolean identities and optimization techniques like constant folding and loop unrolling, the project has demonstrated a notable improvement in both compilation speed and runtime performance. Additionally, it has effectively reduced the complexity and size of compiled binaries, as evidenced by the before and after comparisons of AST structures and IR file sizes. This optimization not only speeds up the code execution but also simplifies the debugging and maintenance of code by creating more streamlined ASTs.
 
 ## Acknowledgments
 Special thanks to Professor Vipin Chaudhary and the Teaching Assistants for their guidance on LLVM implementation.
