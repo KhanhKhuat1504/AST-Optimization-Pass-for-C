@@ -51,6 +51,33 @@ int main()
 
 After optimization, the if condition would be just True because (5 > 3) returns True -> (5 > 3 || 10 > 7) would be True without validating (10 > 7) which would make the whole if condition True without validating (4 >= 5 && 10 <= 12). This is the Identity Law from Boolean Algebra. 
 
+``` c
+int puts(string str);
+
+int main()
+{
+    int i;
+    i = 1;
+    if (i < 1)
+    {
+        if (i < 2)
+        {
+            if (true)
+            {
+                if (i < 4)
+                {
+                    if (i < 5)
+                    {
+                        puts("Goodbye World.");
+                    }
+                }
+            }
+        }
+    }
+
+    return 0;
+}
+```
 <table>
   <tr>
     <td style="vertical-align: top;">
