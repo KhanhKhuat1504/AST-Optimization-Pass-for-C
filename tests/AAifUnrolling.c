@@ -4,15 +4,15 @@ int main()
 {
     int i;
     i = 1;
-    if (i < 1)
+    if (true)
     {
-        if (i < 2)
+        if (true)
         {
             if (true)
             {
-                if (i < 4)
+                if (true)
                 {
-                    if (i < 5)
+                    if (true)
                     {
                         puts("Goodbye World.");
                     }

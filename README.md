@@ -51,6 +51,20 @@ int main()
 
 After optimization, the if condition would be just True because (5 > 3) returns True -> (5 > 3 || 10 > 7) would be True without validating (10 > 7) which would make the whole if condition True without validating (4 >= 5 && 10 <= 12). This is the Identity Law from Boolean Algebra. 
 
+<table>
+  <tr>
+    <td style="vertical-align: top;">
+      <p>Before Optimization:</p>
+      <img src="loopBefore.png" alt="AST Before Optimization" style="width:100%">
+    </td>
+    <td style="vertical-align: top;">
+      <p>After Optimization:</p>
+      <img src="loopAfter.png" alt="AST After Optimization" style="width:100%">
+    </td>
+  </tr>
+</table>
+
+After optimization, the nested loop conditions change into an and expression of cond1 && cond2 && cond3 && cond4 && cond5 which provide a better AST structure.  
 We also see a great enhancement in IR file size after applying our optimization pass:  
 <div align="center">
   <img src="IRcompare.png" alt="IR file size comparison" title="IR File Size Comparison">
