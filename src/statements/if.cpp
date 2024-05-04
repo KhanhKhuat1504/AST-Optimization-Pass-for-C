@@ -1,6 +1,7 @@
 #include "if.h"
 
 #include "../function.h"
+#include "../expressions/bool.h"
 
 std::unique_ptr<VarType> ASTStatementIf::StatementReturnType(ASTFunction &func)
 {
@@ -27,11 +28,45 @@ std::unique_ptr<VarType> ASTStatementIf::StatementReturnType(ASTFunction &func)
 void ASTStatementIf::MyOptznPass(std::unique_ptr<ASTStatement> &parentPtr, ASTFunction &func)
 {
     if (condition)
+    {
         condition->MyOptznPass(condition, func);
-    if (thenStatement)
-        thenStatement->MyOptznPass(thenStatement, func);
-    if (elseStatement)
-        elseStatement->MyOptznPass(elseStatement, func);
+    }
+
+    ASTExpressionBool *condBool = dynamic_cast<ASTExpressionBool *>(condition.get());
+    if (condBool)
+    {
+        if (condBool->GetVal())
+        {
+            if (thenStatement)
+            {
+                thenStatement->MyOptznPass(thenStatement, func);
+                parentPtr = std::move(thenStatement);
+            }
+        }
+        else
+        {
+            if (!elseStatement)
+            {
+                parentPtr.reset();
+            }
+            else
+            {
+                elseStatement->MyOptznPass(elseStatement, func);
+                parentPtr = std::move(elseStatement);
+            }
+        }
+    }
+    else
+    {
+        if (thenStatement)
+        {
+            thenStatement->MyOptznPass(thenStatement, func);
+        }
+        if (elseStatement)
+        {
+            elseStatement->MyOptznPass(elseStatement, func);
+        }
+    }
 }
 
 void ASTStatementIf::Compile(llvm::Module &mod, llvm::IRBuilder<> &builder, ASTFunction &func)
