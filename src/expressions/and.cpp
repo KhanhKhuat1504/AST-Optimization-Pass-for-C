@@ -14,15 +14,12 @@ bool ASTExpressionAnd::IsLValue(ASTFunction &func)
 
 void ASTExpressionAnd::MyOptznPass(std::unique_ptr<ASTExpression> &parentPtr, ASTFunction &func)
 {
-    bool a1Optimzable = a1 && a1->IsConstant();
-    bool a2Optimzable = a2 && a2->IsConstant();
-
-    if (a1Optimzable)
+    if (a1)
         a1->MyOptznPass(a1, func);
-    if (a2Optimzable)
+    if (a2)
         a2->MyOptznPass(a2, func);
 
-    if (a1Optimzable)
+    if (a1 && a1->IsConstant())
     {
         if (a1->ReturnType(func)->Equals(&VarTypeSimple::BoolType))
         {
@@ -39,7 +36,7 @@ void ASTExpressionAnd::MyOptznPass(std::unique_ptr<ASTExpression> &parentPtr, AS
         }
     }
 
-    if (a2Optimzable)
+    if (a2 && a2->IsConstant())
     {
         if (a2->ReturnType(func)->Equals(&VarTypeSimple::BoolType))
         {
