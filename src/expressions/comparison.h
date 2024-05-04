@@ -1,6 +1,8 @@
 #pragma once
 
-#include "../expression.h"
+#include "int.h"
+#include "float.h"
+#include "bool.h"
 
 // Comparison types.
 enum ASTExpressionComparisonType

@@ -12,10 +12,104 @@ bool ASTExpressionComparison::IsLValue(ASTFunction &func)
 
 void ASTExpressionComparison::MyOptznPass(std::unique_ptr<ASTExpression> &parentPtr, ASTFunction &func)
 {
+    std::cout << "Optimizing Comparison." << std::endl;
+    bool a1Optimizable = false;
+    bool a2Optimizable = false;
+    float a1Val = 0;
+    float a2Val = 0;
+
     if (a1)
-        a1->MyOptznPass(a1, func);
+    {
+        if (a1->IsConstant())
+        {
+            std::cout << "A1 Constant." << std::endl;
+            if (a1->ReturnType(func)->Equals(&VarTypeSimple::IntType))
+            {
+                a1Optimizable = true;
+                a1Val = dynamic_cast<ASTExpressionInt *>(a1.get())->GetVal();
+            }
+            else if (a1->ReturnType(func)->Equals(&VarTypeSimple::FloatType))
+            {
+                a1Optimizable = true;
+                a1Val = dynamic_cast<ASTExpressionFloat *>(a1.get())->GetVal();
+            }
+            else if (a1->ReturnType(func)->Equals(&VarTypeSimple::BoolType))
+            {
+                a1Optimizable = true;
+                if (dynamic_cast<ASTExpressionBool *>(a1.get())->GetVal())
+                {
+                    a1Val = 1.0f;
+                }
+                else
+                {
+                    a1Val = 0.0f;
+                }
+            }
+        }
+        else
+        {
+            std::cout << "A1 NOT Constant." << std::endl;
+            a1->MyOptznPass(a1, func);
+        }
+    }
+
     if (a2)
-        a2->MyOptznPass(a2, func);
+    {
+        if (a2->IsConstant())
+        {
+            if (a2->ReturnType(func)->Equals(&VarTypeSimple::IntType))
+            {
+                a2Optimizable = true;
+                a2Val = dynamic_cast<ASTExpressionInt *>(a2.get())->GetVal();
+            }
+            else if (a2->ReturnType(func)->Equals(&VarTypeSimple::FloatType))
+            {
+                a2Optimizable = true;
+                a2Val = dynamic_cast<ASTExpressionFloat *>(a2.get())->GetVal();
+            }
+            else if (a2->ReturnType(func)->Equals(&VarTypeSimple::BoolType))
+            {
+                a2Optimizable = true;
+                if (dynamic_cast<ASTExpressionBool *>(a1.get())->GetVal())
+                {
+                    a1Val = 1.0f;
+                }
+                else
+                {
+                    a1Val = 0.0f;
+                }
+            }
+        }
+        else
+        {
+            a2->MyOptznPass(a2, func);
+        }
+    }
+
+    if (a1Optimizable && a2Optimizable)
+    {
+        switch (type)
+        {
+        case Equal:
+            parentPtr.reset(new ASTExpressionBool(a1Val == a2Val));
+            break;
+        case NotEqual:
+            parentPtr.reset(new ASTExpressionBool(a1Val != a2Val));
+            break;
+        case LessThan:
+            parentPtr.reset(new ASTExpressionBool(a1Val < a2Val));
+            break;
+        case LessThanOrEqual:
+            parentPtr.reset(new ASTExpressionBool(a1Val <= a2Val));
+            break;
+        case GreaterThan:
+            parentPtr.reset(new ASTExpressionBool(a1Val > a2Val));
+            break;
+        case GreaterThanOrEqual:
+            parentPtr.reset(new ASTExpressionBool(a1Val >= a2Val));
+            break;
+        }
+    }
 }
 
 llvm::Value *ASTExpressionComparison::Compile(llvm::IRBuilder<> &builder, ASTFunction &func)
