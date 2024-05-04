@@ -12,7 +12,6 @@ bool ASTExpressionComparison::IsLValue(ASTFunction &func)
 
 void ASTExpressionComparison::MyOptznPass(std::unique_ptr<ASTExpression> &parentPtr, ASTFunction &func)
 {
-    std::cout << "Optimizing Comparison." << std::endl;
     bool a1Optimizable = false;
     bool a2Optimizable = false;
     float a1Val = 0;
@@ -22,7 +21,6 @@ void ASTExpressionComparison::MyOptznPass(std::unique_ptr<ASTExpression> &parent
     {
         if (a1->IsConstant())
         {
-            std::cout << "A1 Constant." << std::endl;
             if (a1->ReturnType(func)->Equals(&VarTypeSimple::IntType))
             {
                 a1Optimizable = true;
@@ -48,7 +46,6 @@ void ASTExpressionComparison::MyOptznPass(std::unique_ptr<ASTExpression> &parent
         }
         else
         {
-            std::cout << "A1 NOT Constant." << std::endl;
             a1->MyOptznPass(a1, func);
         }
     }
