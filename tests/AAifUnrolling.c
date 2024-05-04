@@ -10,7 +10,7 @@ int main()
         {
             if (true)
             {
-                if (true)
+                if (i < 4)
                 {
                     if (i < 5)
                     {
