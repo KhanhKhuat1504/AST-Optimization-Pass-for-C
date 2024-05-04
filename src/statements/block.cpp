@@ -25,28 +25,33 @@ std::unique_ptr<VarType> ASTStatementBlock::StatementReturnType(ASTFunction &fun
 
 void ASTStatementBlock::MyOptznPass(std::unique_ptr<ASTStatement> &parentPtr, ASTFunction &func)
 {
-
+    int counter = 0;
     for (std::unique_ptr<ASTStatement> &statement : statements)
-    {
+    {   
+        ASTStatementBlock *blackStmt = dynamic_cast<ASTStatementBlock *>(statement.get());
+        if (blackStmt) {
+            counter += blackStmt->statements.size;
+        } else {
+            counter++;
+        }
         statement->MyOptznPass(statement, func);
         if (statement->StatementReturnType(func))
             return;
     }
 
-    std::vector<std::unique_ptr<ASTStatement>>::iterator iter;
-    int i = 0;
-    while (i < statements.size())
-    {
-        ASTStatementBlock *blackStmt = dynamic_cast<ASTStatementBlock *>((*iter).get());
-        if (blackStmt)
-        {
-            statements.erase(statements.begin() + i);
-            // statements.insert(statements.begin() + i, blackStmt->statements.begin(), blackStmt->statements.end());
+
+    std::vector<std::unique_ptr<ASTStatement>> newStatements(counter);
+    for (int i = 0; i < counter; i++) {
+        ASTStatementBlock *blackStmt = dynamic_cast<ASTStatementBlock *>(statements[i].get());
+        if (blackStmt) {
+            newStatements.insert(statements.begin() + i, blackStmt->newStatements.begin(), blackStmt->newStatements.end());
+            i+= blackStmt->statements.size;
+        } else {
+            newStatements.insert(i, std::move(statements[i]));
         }
-        else
-        {
-            i++;
-        }
+        statement->MyOptznPass(statement, func);
+        if (statement->StatementReturnType(func))
+            return;
     }
 
     // Block : stmt block stmt stmt stmt stmt stmt block stm
